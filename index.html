@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventario de máquinas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1f6feb">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#fff; --ink:#16181d; --muted:#6b7280; --line:#e3e5e9;
+    --accent:#1f6feb; --accent-ink:#fff; --danger:#c62828; --radius:14px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#111318; --card:#1b1e25; --ink:#eceef2; --muted:#9aa1ad; --line:#2a2e37; --accent:#4c8dff; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  button{font:inherit;color:inherit;cursor:pointer}
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+  header h1{font-size:19px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ghost{background:none;border:0;padding:8px 10px;border-radius:10px;color:var(--accent);font-weight:600}
+  .ghost:active{background:var(--line)}
+  main{padding:14px 16px 110px;max-width:720px;margin:0 auto}
+  .banner{margin:10px 16px 0;padding:10px 12px;border-radius:10px;background:#fff4d6;color:#5b4300;font-size:14px}
+  @media (prefers-color-scheme:dark){ .banner{background:#3a3015;color:#f3dc9b} }
+  .search{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:16px;margin-bottom:12px}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px;text-align:left;width:100%}
+  .thumb{width:64px;height:64px;border-radius:10px;object-fit:cover;background:var(--line);flex:none;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--muted)}
+  .item .code{font-weight:700;font-size:17px;word-break:break-all}
+  .item .sub{color:var(--muted);font-size:13px}
+  .empty{text-align:center;color:var(--muted);padding:40px 10px}
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:max(18px,env(safe-area-inset-bottom));z-index:6;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:16px 26px;font-size:17px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap}
+  .fab:active{transform:translateX(-50%) scale(.97)}
+  .hero{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);background:var(--line);display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--muted)}
+  .mcode{font-size:24px;font-weight:800;margin:12px 0 2px;word-break:break-all}
+  .meta{color:var(--muted);font-size:13px}
+  .actions{display:flex;gap:8px;margin:12px 0 4px;flex-wrap:wrap}
+  .btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 14px;font-weight:600}
+  .btn.danger{color:var(--danger)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .btn:disabled{opacity:.5}
+  h3{margin:22px 0 10px;font-size:16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .comp{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative}
+  .comp .img{width:100%;aspect-ratio:1;object-fit:cover;display:flex;align-items:center;justify-content:center;background:var(--line);font-size:32px;color:var(--muted);border:0;padding:0}
+  .comp .c{padding:8px 10px;font-weight:700;word-break:break-all;display:flex;justify-content:space-between;gap:6px;align-items:center}
+  .comp .c button{border:0;background:none;color:var(--accent);font-size:13px;font-weight:600;padding:4px}
+  .overlay{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+  .overlay[hidden]{display:none}
+  .panel{background:var(--card);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px 16px max(18px,env(safe-area-inset-bottom));max-height:94vh;overflow:auto}
+  .panel h2{margin:0 0 12px;font-size:19px}
+  .shot{width:100%;aspect-ratio:4/3;border:2px dashed var(--line);border-radius:var(--radius);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-weight:600;overflow:hidden;padding:0}
+  .shot img{width:100%;height:100%;object-fit:cover}
+  label.f{display:block;margin-top:14px;font-weight:600;font-size:14px}
+  label.f input{display:block;width:100%;margin-top:6px;padding:13px 14px;font-size:18px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);letter-spacing:.5px}
+  .warn{min-height:20px;margin:8px 0 0;font-size:14px;color:var(--danger)}
+  .warn.info{color:var(--muted)}
+  .row{display:flex;gap:10px;margin-top:14px}
+  .row .btn{flex:1;padding:14px;font-size:16px}
+  .lightbox{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
+  .lightbox[hidden]{display:none}
+  .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:40;background:#222;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;max-width:90vw}
+  .toast[hidden]{display:none}
+  .foot{margin-top:22px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <button id="back" class="ghost" hidden>‹ Volver</button>
+  <h1 id="title">Máquinas</h1>
+  <button id="exportBtn" class="ghost" hidden>Exportar</button>
+</header>
+<div id="banner" class="banner" hidden></div>
+<main id="view"></main>
+<button id="fab" class="fab" hidden></button>
+
+<div id="sheet" class="overlay" hidden>
+  <div class="panel">
+    <h2 id="sheetTitle"></h2>
+    <div id="counter" class="meta" style="margin:-6px 0 8px" hidden></div>
+    <button id="shot" class="shot" type="button"></button>
+    <div class="row" style="margin-top:10px">
+      <button id="btnCam" class="btn" type="button">📷 Hacer foto</button>
+      <button id="btnGal" class="btn" type="button">🖼️ Galería</button>
+    </div>
+    <label class="f">Código
+      <input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done">
+    </label>
+    <p id="sheetMsg" class="warn"></p>
+    <div class="row">
+      <button id="cancel" class="btn" type="button">Cancelar</button>
+      <button id="save" class="btn primary" type="button">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirm" class="overlay" hidden>
+  <div class="panel">
+    <h2 id="confirmText"></h2>
+    <div class="row">
+      <button id="confirmNo" class="btn" type="button">Cancelar</button>
+      <button id="confirmYes" class="btn primary" style="background:var(--danger);border-color:var(--danger)" type="button">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" class="lightbox" hidden><img alt=""></div>
+<div id="toast" class="toast" hidden></div>
+<input type="file" id="cam" accept="image/*" capture="environment" hidden>
+<input type="file" id="gal" accept="image/*" multiple hidden>
+<input type="file" id="imp" accept=".zip,application/zip" hidden>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const fmt = t => t ? new Date(t).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+  const norm = s => String(s || '').trim().toUpperCase();
+
+  // ---------- estado ----------
+  let mode = 'loading';          // loading | local | error
+  let machines = [];             // [{id, code, photo, createdAt, components:[...]}]
+  let currentId = null;
+  let query = '';
+  const urls = {};               // id de foto -> objectURL
+
+  const canWrite = () => mode === 'local';
+  const current = () => machines.find(m => m.id === currentId) || null;
+  const photoSrc = p => (p && urls[p]) || '';
+
+  function banner(text){ const b = $('#banner'); b.textContent = text || ''; b.hidden = !text; }
+  let toastT;
+  function toast(text){ const t = $('#toast'); t.textContent = text; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2800); }
+
+  // ---------- almacenamiento en el móvil (IndexedDB) ----------
+  let idb = null;
+  function openIdb(){
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('inventario-maquinas', 1);
+      r.onupgradeneeded = () => {
+        const d = r.result;
+        if (!d.objectStoreNames.contains('machines')) d.createObjectStore('machines', { keyPath: 'id' });
+        if (!d.objectStoreNames.contains('photos')) d.createObjectStore('photos');
+      };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  }
+  function tx(store, mode, fn){
+    return new Promise((res, rej) => {
+      const t = idb.transaction(store, mode);
+      const out = fn(t.objectStore(store));
+      t.oncomplete = () => res(out && 'result' in out ? out.result : undefined);
+      t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  }
+  const idbAll = store => tx(store, 'readonly', s => s.getAll());
+  const idbGet = (store, key) => tx(store, 'readonly', s => s.get(key));
+  function idbAllKeysAndValues(store){
+    return new Promise((res, rej) => {
+      const out = []; const t = idb.transaction(store, 'readonly');
+      t.objectStore(store).openCursor().onsuccess = e => { const c = e.target.result; if (c){ out.push([c.key, c.value]); c.continue(); } };
+      t.oncomplete = () => res(out); t.onerror = () => rej(t.error);
+    });
+  }
+
+  let askedPersist = false;
+  async function persist(m){
+    const i = machines.findIndex(x => x.id === m.id); if (i < 0) machines.push(m); else machines[i] = m;
+    sortMachines(); render();
+    await tx('machines', 'readwrite', s => s.put(JSON.parse(JSON.stringify(m))));
+    if (!askedPersist && navigator.storage && navigator.storage.persist){ askedPersist = true; try { await navigator.storage.persist(); } catch(_){} }
+  }
+  async function removeMachineDoc(id){
+    machines = machines.filter(x => x.id !== id); render();
+    await tx('machines', 'readwrite', s => s.delete(id));
+  }
+  async function storePhoto(blob){
+    if (!blob) return null;
+    const id = newId();
+    await tx('photos', 'readwrite', s => s.put(blob, id));
+    urls[id] = URL.createObjectURL(blob);
+    return id;
+  }
+  async function dropPhoto(p){
+    if (!p) return;
+    try { await tx('photos', 'readwrite', s => s.delete(p)); } catch(_){}
+    if (urls[p]){ URL.revokeObjectURL(urls[p]); delete urls[p]; }
+  }
+  function sortMachines(){ machines.sort((a,b) => (b.createdAt||0) - (a.createdAt||0)); }
+
+  async function loadAll(){
+    machines = (await idbAll('machines')).map(m => ({ ...m, components: Array.isArray(m.components) ? m.components : [] }));
+    for (const [k, blob] of await idbAllKeysAndValues('photos')){ if (!urls[k]) urls[k] = URL.createObjectURL(blob); }
+    sortMachines();
+  }
+
+  async function init(){
+    render();
+    try {
+      idb = await openIdb();
+      await loadAll();
+      mode = 'local';
+      banner('');
+    } catch(e){
+      mode = 'error';
+      banner('Este navegador no permite guardar datos (¿modo incógnito?). Ábrela en Chrome normal.');
+    }
+    render();
+    if ('serviceWorker' in navigator && location.protocol === 'https:'){
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  }
+
+  // ---------- fotos ----------
+  async function compress(file){
+    try { const b = await compressInner(file); if (b && b.size) return b; } catch(_){}
+    // Si el móvil no deja procesar la imagen, se usa tal cual (si es un formato admitido)
+    if (/^image\/(jpeg|png|webp|gif)$/.test(file.type)) return file;
+    throw new Error('formato');
+  }
+  async function compressInner(file){
+    const MAX = 1600;
+    let src, w, h;
+    try {
+      src = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      w = src.width; h = src.height;
+    } catch(_){
+      src = await new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = URL.createObjectURL(file); });
+      w = src.naturalWidth; h = src.naturalHeight;
+    }
+    const s = Math.min(1, MAX / Math.max(w, h));
+    const c = document.createElement('canvas');
+    c.width = Math.round(w * s); c.height = Math.round(h * s);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    return await new Promise(res => c.toBlob(b => res(b), 'image/jpeg', 0.8));
+  }
+
+  // ---------- hoja de alta/edición ----------
+  let sheet = null; // {title, code, photoUrl, blob, previewUrl, onSave, checkDup}
+  const cam = $('#cam');
+
+  const gal = $('#gal');
+  function openSheet(opts){
+    sheet = { blob: null, previewUrl: null, queue: [], total: 0, ...opts };
+    $('#sheetTitle').textContent = opts.title;
+    $('#code').value = opts.code || '';
+    $('#btnGal').textContent = opts.multi ? '🖼️ Galería (varias)' : '🖼️ Galería';
+    setMsg('');
+    drawShot(); drawCounter();
+    $('#sheet').hidden = false;
+    updateSave();
+  }
+  function closeSheet(){
+    if (sheet){ if (sheet.previewUrl) URL.revokeObjectURL(sheet.previewUrl); }
+    sheet = null; $('#sheet').hidden = true;
+  }
+  function drawCounter(){
+    const c = $('#counter');
+    if (sheet && sheet.total > 1){ c.hidden = false; c.textContent = `Foto ${sheet.total - sheet.queue.length} de ${sheet.total} · pon el código de esta foto`; }
+    else c.hidden = true;
+  }
+  function setBlob(blob){
+    if (sheet.previewUrl) URL.revokeObjectURL(sheet.previewUrl);
+    sheet.blob = blob; sheet.previewUrl = blob ? URL.createObjectURL(blob) : null;
+    drawShot(); drawCounter(); updateSave();
+  }
+  async function takeFiles(files){
+    if (!files.length || !sheet) return;
+    const list = sheet.multi ? files : files.slice(0, 1);
+    setMsg(list.length > 1 ? `Procesando ${list.length} fotos…` : 'Procesando foto…', true);
+    const blobs = []; let bad = 0;
+    for (const f of list){ try { blobs.push(await compress(f)); } catch(_){ bad++; } }
+    if (!sheet) return;
+    if (!blobs.length){ setMsg('No se pudo leer la foto. Prueba con otra o desde la galería.'); return; }
+    sheet.queue = blobs.slice(1); sheet.total = blobs.length;
+    setMsg(bad ? `${bad} foto(s) no se pudieron leer y se han saltado.` : '', !bad);
+    setBlob(blobs[0]);
+    if (!$('#code').value) $('#code').focus();
+  }
+  function drawShot(){
+    const url = sheet.previewUrl || sheet.photoUrl;
+    $('#shot').innerHTML = url
+      ? `<img src="${esc(url)}" alt="Foto">`
+      : `<span style="font-size:40px">📷</span><span>Hacer foto</span>`;
+  }
+  function setMsg(t, info){ const m = $('#sheetMsg'); m.textContent = t || ''; m.className = 'warn' + (info ? ' info' : ''); }
+  function updateSave(){
+    const code = norm($('#code').value);
+    $('#save').disabled = !code;
+    if (sheet && sheet.checkDup && code){
+      const d = sheet.checkDup(code);
+      setMsg(d ? d : (sheet.previewUrl || sheet.photoUrl ? '' : 'La foto es opcional, pero recomendable.'), !d);
+    }
+  }
+  $('#shot').addEventListener('click', () => cam.click());
+  $('#btnCam').addEventListener('click', () => cam.click());
+  $('#btnGal').addEventListener('click', () => gal.click());
+  $('#code').addEventListener('input', updateSave);
+  $('#code').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('#save').disabled) $('#save').click(); });
+  $('#cancel').addEventListener('click', closeSheet);
+  for (const inp of [cam, gal]){
+    inp.addEventListener('change', () => { const files = Array.from(inp.files || []); inp.value = ''; takeFiles(files); });
+  }
+  $('#save').addEventListener('click', async () => {
+    if (!sheet) return;
+    const code = norm($('#code').value);
+    if (!code) return;
+    const btn = $('#save'); btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      const photo = sheet.blob ? await storePhoto(sheet.blob) : undefined;
+      await sheet.onSave(code, photo);
+      if (sheet && sheet.queue.length){
+        $('#code').value = '';
+        setBlob(sheet.queue.shift());
+        setMsg('Guardado. Siguiente foto.', true);
+        $('#code').focus();
+      } else closeSheet();
+    } catch(e){
+      const c = e && e.code;
+      setMsg(c === 'quota_or_state' || c === 'quota_exceeded' ? 'Almacenamiento lleno: borra elementos antiguos.'
+           : c === 'too_large' ? 'La foto es demasiado grande.'
+           : 'No se pudo guardar. Revisa la conexión y vuelve a intentarlo.');
+    } finally { btn.textContent = 'Guardar'; updateSave(); }
+  });
+
+  // ---------- confirmación ----------
+  let confirmCb = null;
+  function ask(text, cb){ $('#confirmText').textContent = text; confirmCb = cb; $('#confirm').hidden = false; }
+  $('#confirmNo').addEventListener('click', () => { $('#confirm').hidden = true; confirmCb = null; });
+  $('#confirmYes').addEventListener('click', async () => { $('#confirm').hidden = true; const cb = confirmCb; confirmCb = null; if (cb){ try { await cb(); } catch(_){ toast('No se pudo eliminar.'); } } });
+
+  // ---------- visor ----------
+  function showPhoto(url){ if (!url) return; const lb = $('#lightbox'); lb.querySelector('img').src = url; lb.hidden = false; }
+  $('#lightbox').addEventListener('click', () => $('#lightbox').hidden = true);
+
+  // ---------- acciones ----------
+  function dupMachine(code, exceptId){
+    const m = machines.find(x => norm(x.code) === code && x.id !== exceptId);
+    return m ? 'Ya existe una máquina con este código.' : '';
+  }
+  function newMachine(){
+    openSheet({
+      title: 'Nueva máquina',
+      checkDup: c => dupMachine(c),
+      onSave: async (code, photo) => {
+        const m = { id: newId(), code, photo: photo || null, createdAt: Date.now(), components: [] };
+        currentId = m.id;
+        await persist(m);
+      }
+    });
+  }
+  function editMachine(m){
+    openSheet({
+      title: 'Editar máquina', code: m.code, photoUrl: photoSrc(m.photo),
+      checkDup: c => dupMachine(c, m.id),
+      onSave: async (code, photo) => {
+        const old = m.photo;
+        const upd = { ...m, code, photo: photo || m.photo, updatedAt: Date.now() };
+        await persist(upd);
+        if (photo && old) dropPhoto(old);
+      }
+    });
+  }
+  function delMachine(m){
+    ask(`¿Eliminar la máquina ${m.code} y sus ${m.components.length} componentes?`, async () => {
+      currentId = null;
+      await removeMachineDoc(m.id);
+      dropPhoto(m.photo); m.components.forEach(c => dropPhoto(c.photo));
+      toast('Máquina eliminada');
+    });
+  }
+  function dupComp(m, code, exceptId){
+    return m.components.some(c => norm(c.code) === code && c.id !== exceptId) ? 'Este componente ya está en esta máquina.' : '';
+  }
+  function newComponent(m){
+    openSheet({
+      title: `Componente de ${m.code}`, multi: true,
+      checkDup: c => { const mm = current() || m; return dupComp(mm, c); },
+      onSave: async (code, photo) => {
+        const mm = current() || m;
+        const upd = { ...mm, components: [...mm.components, { id: newId(), code, photo: photo || null, createdAt: Date.now() }], updatedAt: Date.now() };
+        await persist(upd);
+        toast('Componente añadido');
+      }
+    });
+  }
+  function editComponent(m, comp){
+    openSheet({
+      title: 'Editar componente', code: comp.code, photoUrl: photoSrc(comp.photo),
+      checkDup: c => dupComp(current() || m, c, comp.id),
+      onSave: async (code, photo) => {
+        const mm = current() || m;
+        const upd = { ...mm, updatedAt: Date.now(), components: mm.components.map(c => c.id === comp.id ? { ...c, code, photo: photo || c.photo } : c) };
+        await persist(upd);
+        if (photo && comp.photo) dropPhoto(comp.photo);
+      }
+    });
+  }
+  function delComponent(m, comp){
+    ask(`¿Eliminar el componente ${comp.code}?`, async () => {
+      const mm = current() || m;
+      await persist({ ...mm, updatedAt: Date.now(), components: mm.components.filter(c => c.id !== comp.id) });
+      dropPhoto(comp.photo);
+    });
+  }
+
+  // ---------- exportar / importar ----------
+  const csvCell = v => { const s = String(v ?? ''); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const safeName = s => String(s).replace(/[^A-Za-z0-9._-]+/g, '_').slice(0, 80) || 'sin_codigo';
+  function saveFile(blob, filename){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+  }
+  async function exportAll(){
+    if (!machines.length){ toast('No hay nada que exportar'); return; }
+    if (!window.JSZip){ toast('Sin conexión: no se puede preparar el ZIP ahora'); return; }
+    toast('Preparando ZIP…');
+    const zip = new JSZip();
+    const rows = [['maquina','componente','alta_maquina','alta_componente','foto_maquina','foto_componente']];
+    const data = { version: 1, exportado: new Date().toISOString(), machines: [] };
+    const addPhoto = async (id, path) => { if (!id) return ''; const b = await idbGet('photos', id); if (!b) return ''; zip.file(path, b); return path; };
+    for (const m of machines){
+      const mFoto = await addPhoto(m.photo, `fotos/${safeName(m.code)}/_maquina.jpg`);
+      const comps = [];
+      for (let i = 0; i < m.components.length; i++){
+        const c = m.components[i];
+        const cFoto = await addPhoto(c.photo, `fotos/${safeName(m.code)}/${String(i+1).padStart(2,'0')}_${safeName(c.code)}.jpg`);
+        comps.push({ ...c, photoFile: cFoto });
+        rows.push([m.code, c.code, fmt(m.createdAt), fmt(c.createdAt), mFoto, cFoto]);
+      }
+      if (!m.components.length) rows.push([m.code, '', fmt(m.createdAt), '', mFoto, '']);
+      data.machines.push({ ...m, photoFile: mFoto, components: comps });
+    }
+    zip.file('inventario.csv', '﻿' + rows.map(r => r.map(csvCell).join(';')).join('\r\n'));
+    zip.file('datos.json', JSON.stringify(data, null, 1));
+    const blob = await zip.generateAsync({ type: 'blob' });
+    saveFile(blob, `inventario_${new Date().toISOString().slice(0,10)}.zip`);
+    try { localStorage.setItem('lastExport', String(Date.now())); } catch(_){}
+  }
+  async function importZip(file){
+    if (!window.JSZip){ toast('Sin conexión: no se puede leer el ZIP ahora'); return; }
+    try {
+      const zip = await JSZip.loadAsync(file);
+      const jf = zip.file('datos.json');
+      if (!jf){ toast('Este ZIP no es una copia de esta app'); return; }
+      const data = JSON.parse(await jf.async('string'));
+      let added = 0, skipped = 0;
+      for (const m of (data.machines || [])){
+        if (!m || !m.id || machines.some(x => x.id === m.id)){ skipped++; continue; }
+        const load = async p => { const f = p && zip.file(p); return f ? await storePhoto(new Blob([await f.async('blob')], { type: 'image/jpeg' })) : null; };
+        const comps = [];
+        for (const c of (m.components || [])) comps.push({ id: c.id || newId(), code: c.code, createdAt: c.createdAt, photo: await load(c.photoFile) });
+        await persist({ id: m.id, code: m.code, createdAt: m.createdAt, updatedAt: m.updatedAt, photo: await load(m.photoFile), components: comps });
+        added++;
+      }
+      toast(`Importadas ${added} máquinas` + (skipped ? ` (${skipped} ya estaban)` : ''));
+    } catch(_){ toast('No se pudo leer el ZIP'); }
+  }
+
+  // ---------- pantallas ----------
+  function render(){
+    const m = current();
+    $('#back').hidden = !m;
+    $('#title').textContent = m ? m.code : 'Máquinas';
+    $('#exportBtn').hidden = !!m || !machines.length;
+    const fab = $('#fab');
+    fab.hidden = !canWrite();
+    fab.textContent = m ? '📷  Añadir componente' : '📷  Nueva máquina';
+    if (m) renderDetail(m); else renderList();
+  }
+
+  function renderList(){
+    const v = $('#view');
+    if (mode === 'loading' && !machines.length){ v.innerHTML = '<div class="empty">Cargando…</div>'; return; }
+    v.innerHTML = `
+      <input id="q" class="search" type="search" placeholder="Buscar máquina o componente…" value="${esc(query)}" autocapitalize="characters">
+      <div id="list" class="list"></div>`;
+    $('#q').addEventListener('input', e => { query = e.target.value; renderItems(); });
+    renderItems();
+  }
+  function renderItems(){
+    const q = norm(query);
+    const list = machines.filter(m => !q || norm(m.code).includes(q) || m.components.some(c => norm(c.code).includes(q)));
+    const el = $('#list'); if (!el) return;
+    if (!machines.length){
+      el.innerHTML = `<div class="empty">Aún no hay máquinas.<br>Pulsa <b>Nueva máquina</b> para hacer la primera foto.</div>` + footer();
+      return;
+    }
+    if (!list.length){ el.innerHTML = '<div class="empty">Sin resultados.</div>'; return; }
+    el.innerHTML = list.map(m => {
+      const hit = q && !norm(m.code).includes(q) ? m.components.find(c => norm(c.code).includes(q)) : null;
+      return `<button class="item" data-id="${esc(m.id)}">
+        ${m.photo ? `<img class="thumb" src="${esc(photoSrc(m.photo))}" alt="" loading="lazy">` : '<div class="thumb">⚙️</div>'}
+        <div style="min-width:0">
+          <div class="code">${esc(m.code)}</div>
+          <div class="sub">${m.components.length} componente${m.components.length === 1 ? '' : 's'} · ${esc(fmt(m.createdAt))}</div>
+          ${hit ? `<div class="sub">Contiene: <b>${esc(hit.code)}</b></div>` : ''}
+        </div></button>`;
+    }).join('') + `<div class="foot meta">${machines.length} máquina${machines.length === 1 ? '' : 's'}</div>` + footer();
+    bindImport();
+    el.querySelectorAll('.item').forEach(b => b.addEventListener('click', () => { currentId = b.dataset.id; window.scrollTo(0,0); render(); }));
+  }
+
+  function footer(){
+    let last = 0; try { last = +localStorage.getItem('lastExport') || 0; } catch(_){}
+    return `<div class="foot meta" style="margin-top:28px">
+      Los datos se guardan solo en este móvil.<br>
+      ${machines.length ? (last ? 'Última copia: ' + esc(fmt(last)) : '<b>Aún no has hecho ninguna copia.</b>') + ' Usa <b>Exportar</b> de vez en cuando.<br>' : ''}
+      <button class="ghost" id="importBtn" style="margin-top:6px">Importar copia (.zip)</button></div>`;
+  }
+  function renderDetail(m){
+    const v = $('#view');
+    const src = photoSrc(m.photo);
+    v.innerHTML = `
+      ${src ? `<img id="hero" class="hero" src="${esc(src)}" alt="Foto de la máquina">` : '<div class="hero">⚙️</div>'}
+      <div class="mcode">${esc(m.code)}</div>
+      <div class="meta">Alta: ${esc(fmt(m.createdAt))}</div>
+      ${canWrite() ? `<div class="actions">
+        <button id="editM" class="btn">Editar</button>
+        <button id="delM" class="btn danger">Eliminar</button>
+      </div>` : ''}
+      <h3>Componentes (${m.components.length})</h3>
+      ${m.components.length ? `<div class="grid">${m.components.map(c => `
+        <div class="comp" data-id="${esc(c.id)}">
+          ${c.photo ? `<img class="img" src="${esc(photoSrc(c.photo))}" alt="" loading="lazy" data-act="view">` : '<div class="img">🔩</div>'}
+          <div class="c"><span>${esc(c.code)}</span>
+            ${canWrite() ? `<span><button data-act="edit">Editar</button><button data-act="del" style="color:var(--danger)">✕</button></span>` : ''}
+          </div>
+        </div>`).join('')}</div>`
+        : `<div class="empty">Sin componentes.<br>Pulsa <b>Añadir componente</b> para fotografiar el primero.</div>`}`;
+    const hero = $('#hero'); if (hero) hero.addEventListener('click', () => showPhoto(src));
+    const em = $('#editM'); if (em) em.addEventListener('click', () => editMachine(m));
+    const dm = $('#delM'); if (dm) dm.addEventListener('click', () => delMachine(m));
+    v.querySelectorAll('.comp').forEach(card => {
+      const comp = m.components.find(c => c.id === card.dataset.id);
+      card.addEventListener('click', e => {
+        const act = e.target.dataset && e.target.dataset.act;
+        if (act === 'view') showPhoto(photoSrc(comp.photo));
+        if (act === 'edit') editComponent(m, comp);
+        if (act === 'del') delComponent(m, comp);
+      });
+    });
+  }
+
+  function bindImport(){ const b = $('#importBtn'); if (b) b.onclick = () => $('#imp').click(); }
+  $('#imp').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) importZip(f); });
+  $('#back').addEventListener('click', () => { currentId = null; render(); });
+  $('#exportBtn').addEventListener('click', exportAll);
+  $('#fab').addEventListener('click', () => { const m = current(); if (m) newComponent(m); else newMachine(); });
+
+  init();
+})();
+</script>
+</body>
+</html>
