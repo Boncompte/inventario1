@@ -12,32 +12,38 @@
 <style>
   :root{
     --bg:#f4f5f7; --card:#fff; --ink:#16181d; --muted:#6b7280; --line:#e3e5e9;
-    --accent:#1f6feb; --accent-ink:#fff; --danger:#c62828; --radius:14px;
+    --accent:#1f6feb; --accent-ink:#fff; --danger:#c62828; --ok:#1b7f3b; --radius:14px;
   }
   @media (prefers-color-scheme:dark){
-    :root{ --bg:#111318; --card:#1b1e25; --ink:#eceef2; --muted:#9aa1ad; --line:#2a2e37; --accent:#4c8dff; }
+    :root{ --bg:#111318; --card:#1b1e25; --ink:#eceef2; --muted:#9aa1ad; --line:#2a2e37; --accent:#4c8dff; --ok:#3fbf6a; }
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
   button{font:inherit;color:inherit;cursor:pointer}
-  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
-  header h1{font-size:19px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ghost{background:none;border:0;padding:8px 10px;border-radius:10px;color:var(--accent);font-weight:600}
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:4px;padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+  header h1{font-size:19px;margin:0 4px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ghost{background:none;border:0;padding:8px 10px;border-radius:10px;color:var(--accent);font-weight:600;white-space:nowrap}
   .ghost:active{background:var(--line)}
-  main{padding:14px 16px 110px;max-width:720px;margin:0 auto}
+  main{padding:14px 16px 120px;max-width:720px;margin:0 auto}
   .banner{margin:10px 16px 0;padding:10px 12px;border-radius:10px;background:#fff4d6;color:#5b4300;font-size:14px}
-  @media (prefers-color-scheme:dark){ .banner{background:#3a3015;color:#f3dc9b} }
+  .banner.red{background:#fde2e1;color:#7a1414}
+  @media (prefers-color-scheme:dark){ .banner{background:#3a3015;color:#f3dc9b} .banner.red{background:#4a1d1d;color:#ffc9c6} }
+  .banner button{border:0;background:none;color:inherit;font-weight:700;text-decoration:underline;padding:0 0 0 4px}
   .search{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:16px;margin-bottom:12px}
   .list{display:flex;flex-direction:column;gap:10px}
   .item{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px;text-align:left;width:100%}
   .thumb{width:64px;height:64px;border-radius:10px;object-fit:cover;background:var(--line);flex:none;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--muted)}
   .item .code{font-weight:700;font-size:17px;word-break:break-all}
-  .item .sub{color:var(--muted);font-size:13px}
+  .sub{color:var(--muted);font-size:13px}
   .empty{text-align:center;color:var(--muted);padding:40px 10px}
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:max(18px,env(safe-area-inset-bottom));z-index:6;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:16px 26px;font-size:17px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap}
-  .fab:active{transform:translateX(-50%) scale(.97)}
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:10px;justify-content:center;padding:12px 12px max(14px,env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%)}
+  .bar[hidden]{display:none}
+  .bar button{flex:1;max-width:260px;border:0;border-radius:999px;padding:15px 10px;font-size:16px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.2);background:var(--card);color:var(--accent)}
+  .bar button.primary{background:var(--accent);color:var(--accent-ink)}
   .hero{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);background:var(--line);display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--muted)}
   .mcode{font-size:24px;font-weight:800;margin:12px 0 2px;word-break:break-all}
+  .desc{margin:4px 0;font-size:16px}
   .meta{color:var(--muted);font-size:13px}
   .actions{display:flex;gap:8px;margin:12px 0 4px;flex-wrap:wrap}
   .btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 14px;font-weight:600}
@@ -46,10 +52,16 @@
   .btn:disabled{opacity:.5}
   h3{margin:22px 0 10px;font-size:16px}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-  .comp{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative}
+  .comp{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative;text-align:left;padding:0;width:100%}
   .comp .img{width:100%;aspect-ratio:1;object-fit:cover;display:flex;align-items:center;justify-content:center;background:var(--line);font-size:32px;color:var(--muted);border:0;padding:0}
-  .comp .c{padding:8px 10px;font-weight:700;word-break:break-all;display:flex;justify-content:space-between;gap:6px;align-items:center}
-  .comp .c button{border:0;background:none;color:var(--accent);font-size:13px;font-weight:600;padding:4px}
+  .comp .c{padding:8px 10px}
+  .comp .c b{display:block;word-break:break-all}
+  .comp .c span{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .badge{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;border-radius:999px;padding:2px 8px}
+  .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+  .ph{position:relative}
+  .ph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;background:var(--line)}
+  .ph button{position:absolute;top:4px;right:4px;border:0;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;width:28px;height:28px;font-size:14px}
   .overlay{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
   .overlay[hidden]{display:none}
   .panel{background:var(--card);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px 16px max(18px,env(safe-area-inset-bottom));max-height:94vh;overflow:auto}
@@ -57,28 +69,55 @@
   .shot{width:100%;aspect-ratio:4/3;border:2px dashed var(--line);border-radius:var(--radius);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-weight:600;overflow:hidden;padding:0}
   .shot img{width:100%;height:100%;object-fit:cover}
   label.f{display:block;margin-top:14px;font-weight:600;font-size:14px}
-  label.f input{display:block;width:100%;margin-top:6px;padding:13px 14px;font-size:18px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);letter-spacing:.5px}
+  label.f input{display:block;width:100%;margin-top:6px;padding:13px 14px;font-size:18px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+  label.f input.small{font-size:16px}
   .warn{min-height:20px;margin:8px 0 0;font-size:14px;color:var(--danger)}
   .warn.info{color:var(--muted)}
   .row{display:flex;gap:10px;margin-top:14px}
   .row .btn{flex:1;padding:14px;font-size:16px}
+  .col{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .col .btn{padding:15px;font-size:16px}
+  .cand{display:flex;gap:12px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:8px;text-align:left;width:100%;margin-top:8px}
+  .cand img,.cand .thumb{width:76px;height:76px;border-radius:10px;object-fit:cover;flex:none}
+  .cand .meter{height:6px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
+  .cand .meter i{display:block;height:100%;background:var(--ok)}
+  .qimg{width:100%;max-height:220px;object-fit:contain;border-radius:12px;background:#000}
   .lightbox{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
   .lightbox[hidden]{display:none}
   .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
-  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:40;background:#222;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;max-width:90vw}
+  .scanner{position:fixed;inset:0;z-index:25;background:#000;display:flex;flex-direction:column}
+  .scanner[hidden]{display:none}
+  .scanner video{flex:1;width:100%;object-fit:cover;min-height:0}
+  .scanner .frame{position:absolute;left:50%;top:40%;width:64vw;max-width:320px;aspect-ratio:1;transform:translate(-50%,-50%);border:3px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:0 0 0 2000px rgba(0,0,0,.35);pointer-events:none}
+  .scanner .ctl{background:#111;color:#fff;padding:14px 16px max(16px,env(safe-area-inset-bottom))}
+  .scanner .ctl p{margin:0 0 10px;font-size:14px;color:#ccc;text-align:center}
+  .scanner .ctl .row{margin-top:8px}
+  .scanner input{flex:2;padding:12px;font-size:17px;border-radius:10px;border:0}
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);z-index:40;background:#222;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;max-width:90vw;text-align:center}
   .toast[hidden]{display:none}
   .foot{margin-top:22px;text-align:center}
+  .labels{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .label{background:#fff;color:#000;border:1px dashed #999;border-radius:8px;padding:10px;text-align:center;break-inside:avoid}
+  .label svg{width:100%;height:auto;display:block}
+  .label b{display:block;margin-top:4px;font-size:15px;word-break:break-all}
+  @media print{
+    header,.bar,.banner,.noprint,.toast{display:none!important}
+    body,main{background:#fff;padding:0;margin:0;max-width:none}
+    .labels{grid-template-columns:repeat(3,1fr);gap:6mm}
+    .label{border:1px dashed #bbb}
+  }
 </style>
 </head>
 <body>
 <header>
   <button id="back" class="ghost" hidden>‹ Volver</button>
   <h1 id="title">Máquinas</h1>
+  <button id="labelsBtn" class="ghost" hidden>Etiquetas QR</button>
   <button id="exportBtn" class="ghost" hidden>Exportar</button>
 </header>
 <div id="banner" class="banner" hidden></div>
 <main id="view"></main>
-<button id="fab" class="fab" hidden></button>
+<div id="bar" class="bar" hidden><button id="bar2"></button><button id="bar1" class="primary"></button></div>
 
 <div id="sheet" class="overlay" hidden>
   <div class="panel">
@@ -90,7 +129,10 @@
       <button id="btnGal" class="btn" type="button">🖼️ Galería</button>
     </div>
     <label class="f">Código
-      <input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done">
+      <input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next">
+    </label>
+    <label class="f" id="descWrap">Descripción
+      <input id="desc" class="small" autocomplete="off" enterkeyhint="done">
     </label>
     <p id="sheetMsg" class="warn"></p>
     <div class="row">
@@ -100,13 +142,25 @@
   </div>
 </div>
 
-<div id="confirm" class="overlay" hidden>
+<div id="choose" class="overlay" hidden>
   <div class="panel">
-    <h2 id="confirmText"></h2>
+    <h2 id="chooseTitle"></h2>
+    <div id="chooseBody"></div>
+    <div id="chooseOpts" class="col"></div>
+    <div class="row"><button id="chooseCancel" class="btn" type="button">Cancelar</button></div>
+  </div>
+</div>
+
+<div id="scanner" class="scanner" hidden>
+  <video id="video" playsinline muted></video>
+  <div class="frame"></div>
+  <div class="ctl">
+    <p id="scanMsg">Apunta al código QR o de barras de la máquina</p>
     <div class="row">
-      <button id="confirmNo" class="btn" type="button">Cancelar</button>
-      <button id="confirmYes" class="btn primary" style="background:var(--danger);border-color:var(--danger)" type="button">Eliminar</button>
+      <input id="scanCode" placeholder="…o escribe el código" autocapitalize="characters" autocomplete="off" enterkeyhint="go">
+      <button id="scanGo" class="btn primary" type="button">Ir</button>
     </div>
+    <div class="row"><button id="scanClose" class="btn" type="button">Cerrar</button></div>
   </div>
 </div>
 
@@ -118,36 +172,62 @@
 
 <script>
 (() => {
+  const ORT_BASE = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.31.1/dist/';
+  const JSQR_URL = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+  const QRGEN_URL = 'https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.js';
+  const MODEL_URL = 'modelo.onnx';
+
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
   const fmt = t => t ? new Date(t).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
   const norm = s => String(s || '').trim().toUpperCase();
+  const scripts = {};
+  const loadScript = src => scripts[src] || (scripts[src] = new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src; s.onload = res;
+    s.onerror = () => { delete scripts[src]; rej(new Error('script')); }; document.head.appendChild(s);
+  }));
 
   // ---------- estado ----------
   let mode = 'loading';          // loading | local | error
-  let machines = [];             // [{id, code, photo, createdAt, components:[...]}]
-  let currentId = null;
+  let machines = [];
+  let nav = { view: 'list', m: null, c: null };
   let query = '';
-  const urls = {};               // id de foto -> objectURL
+  const urls = {};               // id foto -> objectURL
 
   const canWrite = () => mode === 'local';
-  const current = () => machines.find(m => m.id === currentId) || null;
+  const curM = () => machines.find(m => m.id === nav.m) || null;
+  const curC = () => { const m = curM(); return m ? m.components.find(c => c.id === nav.c) || null : null; };
   const photoSrc = p => (p && urls[p]) || '';
+  const firstPhoto = c => (c.photos && c.photos[0]) || null;
 
-  function banner(text){ const b = $('#banner'); b.textContent = text || ''; b.hidden = !text; }
+  function banner(html, red){ const b = $('#banner'); b.innerHTML = html || ''; b.hidden = !html; b.className = 'banner' + (red ? ' red' : ''); }
   let toastT;
-  function toast(text){ const t = $('#toast'); t.textContent = text; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2800); }
+  function toast(text, ms){ const t = $('#toast'); t.textContent = text; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms || 2800); }
 
-  // ---------- almacenamiento en el móvil (IndexedDB) ----------
+  // ---------- navegación (el botón atrás de Android vuelve, no sale) ----------
+  function go(view, m, c){
+    nav = { view, m: m || null, c: c || null };
+    try { history.pushState(nav, ''); } catch(_){}
+    window.scrollTo(0, 0); render();
+  }
+  window.addEventListener('popstate', e => {
+    if (!$('#scanner').hidden){ closeScanner(); }
+    nav = (e.state && e.state.view) ? e.state : { view: 'list', m: null, c: null };
+    render();
+  });
+  function goBack(){ if (history.state && history.state.view && history.state.view !== 'list') history.back(); else { nav = { view: 'list' }; render(); } }
+
+  // ---------- IndexedDB ----------
   let idb = null;
   function openIdb(){
     return new Promise((res, rej) => {
-      const r = indexedDB.open('inventario-maquinas', 1);
+      const r = indexedDB.open('inventario-maquinas', 2);
       r.onupgradeneeded = () => {
         const d = r.result;
         if (!d.objectStoreNames.contains('machines')) d.createObjectStore('machines', { keyPath: 'id' });
         if (!d.objectStoreNames.contains('photos')) d.createObjectStore('photos');
+        if (!d.objectStoreNames.contains('emb')) d.createObjectStore('emb');
       };
       r.onsuccess = () => res(r.result);
       r.onerror = () => rej(r.error);
@@ -163,7 +243,7 @@
   }
   const idbAll = store => tx(store, 'readonly', s => s.getAll());
   const idbGet = (store, key) => tx(store, 'readonly', s => s.get(key));
-  function idbAllKeysAndValues(store){
+  function idbEntries(store){
     return new Promise((res, rej) => {
       const out = []; const t = idb.transaction(store, 'readonly');
       t.objectStore(store).openCursor().onsuccess = e => { const c = e.target.result; if (c){ out.push([c.key, c.value]); c.continue(); } };
@@ -173,6 +253,7 @@
 
   let askedPersist = false;
   async function persist(m){
+    m.updatedAt = Date.now();
     const i = machines.findIndex(x => x.id === m.id); if (i < 0) machines.push(m); else machines[i] = m;
     sortMachines(); render();
     await tx('machines', 'readwrite', s => s.put(JSON.parse(JSON.stringify(m))));
@@ -181,9 +262,10 @@
   async function removeMachineDoc(id){
     machines = machines.filter(x => x.id !== id); render();
     await tx('machines', 'readwrite', s => s.delete(id));
+    touchDeleted();
   }
+  function touchDeleted(){ try { localStorage.setItem('lastChange', String(Date.now())); } catch(_){} }
   async function storePhoto(blob){
-    if (!blob) return null;
     const id = newId();
     await tx('photos', 'readwrite', s => s.put(blob, id));
     urls[id] = URL.createObjectURL(blob);
@@ -192,50 +274,72 @@
   async function dropPhoto(p){
     if (!p) return;
     try { await tx('photos', 'readwrite', s => s.delete(p)); } catch(_){}
+    try { await tx('emb', 'readwrite', s => s.delete(p)); } catch(_){}
+    delete embCache[p];
     if (urls[p]){ URL.revokeObjectURL(urls[p]); delete urls[p]; }
   }
   function sortMachines(){ machines.sort((a,b) => (b.createdAt||0) - (a.createdAt||0)); }
-
-  async function loadAll(){
-    machines = (await idbAll('machines')).map(m => ({ ...m, components: Array.isArray(m.components) ? m.components : [] }));
-    for (const [k, blob] of await idbAllKeysAndValues('photos')){ if (!urls[k]) urls[k] = URL.createObjectURL(blob); }
-    sortMachines();
+  function migrate(m){
+    m.components = Array.isArray(m.components) ? m.components : [];
+    m.components.forEach(c => {
+      if (!Array.isArray(c.photos)) c.photos = c.photo ? [c.photo] : [];
+      delete c.photo;
+      if (c.desc == null) c.desc = '';
+    });
+    return m;
   }
 
   async function init(){
     render();
     try {
       idb = await openIdb();
-      await loadAll();
+      machines = (await idbAll('machines')).map(migrate);
+      for (const [k, blob] of await idbEntries('photos')){ if (!urls[k]) urls[k] = URL.createObjectURL(blob); }
+      sortMachines();
       mode = 'local';
-      banner('');
     } catch(e){
       mode = 'error';
-      banner('Este navegador no permite guardar datos (¿modo incógnito?). Ábrela en Chrome normal.');
+      banner('Este navegador no permite guardar datos (¿modo incógnito?). Ábrela en el navegador normal.', true);
     }
+    try { history.replaceState(nav, ''); } catch(_){}
     render();
-    if ('serviceWorker' in navigator && location.protocol === 'https:'){
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
+    if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+  // ---------- aviso de copia ----------
+  function lastChange(){
+    let t = 0; try { t = +localStorage.getItem('lastChange') || 0; } catch(_){}
+    for (const m of machines) t = Math.max(t, m.updatedAt || 0, m.createdAt || 0);
+    return t;
+  }
+  function lastExport(){ try { return +localStorage.getItem('lastExport') || 0; } catch(_){ return 0; } }
+  function backupBanner(){
+    if (mode !== 'local' || nav.view !== 'list') return;
+    const lc = lastChange(), le = lastExport();
+    if (!machines.length || lc <= le){ banner(''); return; }
+    const days = le ? Math.floor((Date.now() - le) / 86400000) : null;
+    const red = !le || days >= 7;
+    banner((le ? `Tienes cambios sin copia (última copia hace ${days} día${days === 1 ? '' : 's'}).` : 'Aún no has hecho ninguna copia de seguridad.')
+      + ' <button id="bannerExport">Exportar ahora</button>', red);
+    const b = $('#bannerExport'); if (b) b.onclick = exportAll;
   }
 
   // ---------- fotos ----------
   async function compress(file){
     try { const b = await compressInner(file); if (b && b.size) return b; } catch(_){}
-    // Si el móvil no deja procesar la imagen, se usa tal cual (si es un formato admitido)
     if (/^image\/(jpeg|png|webp|gif)$/.test(file.type)) return file;
     throw new Error('formato');
   }
+  async function toBitmap(blob){
+    try { return await createImageBitmap(blob, { imageOrientation: 'from-image' }); }
+    catch(_){
+      return await new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = URL.createObjectURL(blob); });
+    }
+  }
   async function compressInner(file){
     const MAX = 1600;
-    let src, w, h;
-    try {
-      src = await createImageBitmap(file, { imageOrientation: 'from-image' });
-      w = src.width; h = src.height;
-    } catch(_){
-      src = await new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = URL.createObjectURL(file); });
-      w = src.naturalWidth; h = src.naturalHeight;
-    }
+    const src = await toBitmap(file);
+    const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight;
     const s = Math.min(1, MAX / Math.max(w, h));
     const c = document.createElement('canvas');
     c.width = Math.round(w * s); c.height = Math.round(h * s);
@@ -243,34 +347,84 @@
     return await new Promise(res => c.toBlob(b => res(b), 'image/jpeg', 0.8));
   }
 
-  // ---------- hoja de alta/edición ----------
-  let sheet = null; // {title, code, photoUrl, blob, previewUrl, onSave, checkDup}
-  const cam = $('#cam');
+  // ---------- elegir foto (cámara / galería) ----------
+  const cam = $('#cam'), gal = $('#gal');
+  let pickResolve = null;
+  function pick(input){ return new Promise(res => { pickResolve = res; input.click(); }); }
+  for (const inp of [cam, gal]){
+    inp.addEventListener('change', () => {
+      const files = Array.from(inp.files || []); inp.value = '';
+      if (pickResolve && files.length){ const r = pickResolve; pickResolve = null; r(files); }
+    });
+  }
+  function choosePhotoSource(title){
+    return new Promise(res => {
+      choose(title, '', [
+        { label: '📷 Hacer foto', fn: async () => res(await pick(cam)) },
+        { label: '🖼️ Galería', fn: async () => res(await pick(gal)) },
+      ]);
+    });
+  }
 
-  const gal = $('#gal');
+  // ---------- panel de opciones ----------
+  function choose(title, bodyHtml, opts){
+    $('#chooseTitle').textContent = title;
+    $('#chooseBody').innerHTML = bodyHtml || '';
+    const box = $('#chooseOpts'); box.innerHTML = '';
+    opts.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'btn' + (o.primary ? ' primary' : '') + (o.danger ? ' danger' : '');
+      b.type = 'button'; b.textContent = o.label;
+      b.onclick = () => { closeChoose(); o.fn(); };
+      box.appendChild(b);
+    });
+    $('#choose').hidden = false;
+  }
+  function closeChoose(){ $('#choose').hidden = true; }
+  $('#chooseCancel').addEventListener('click', closeChoose);
+  function ask(text, cb){ choose(text, '', [{ label: 'Eliminar', danger: true, fn: async () => { try { await cb(); } catch(_){ toast('No se pudo eliminar.'); } } }]); }
+
+  // ---------- hoja de alta/edición ----------
+  let sheet = null;
   function openSheet(opts){
     sheet = { blob: null, previewUrl: null, queue: [], total: 0, ...opts };
     $('#sheetTitle').textContent = opts.title;
     $('#code').value = opts.code || '';
+    $('#desc').value = opts.desc || '';
+    $('#descWrap').hidden = !opts.withDesc;
+    $('#code').setAttribute('enterkeyhint', opts.withDesc ? 'next' : 'done');
     $('#btnGal').textContent = opts.multi ? '🖼️ Galería (varias)' : '🖼️ Galería';
+    $('#shot').hidden = $('#btnCam').parentElement.hidden = !!opts.noPhoto;
     setMsg('');
-    drawShot(); drawCounter();
     $('#sheet').hidden = false;
-    updateSave();
+    if (opts.blob) setBlob(opts.blob); else { drawShot(); drawCounter(); updateSave(); }
   }
   function closeSheet(){
-    if (sheet){ if (sheet.previewUrl) URL.revokeObjectURL(sheet.previewUrl); }
+    if (sheet && sheet.previewUrl) URL.revokeObjectURL(sheet.previewUrl);
     sheet = null; $('#sheet').hidden = true;
+  }
+  function drawShot(){
+    const url = sheet.previewUrl || sheet.photoUrl;
+    $('#shot').innerHTML = url ? `<img src="${esc(url)}" alt="Foto">` : `<span style="font-size:40px">📷</span><span>Hacer foto</span>`;
   }
   function drawCounter(){
     const c = $('#counter');
     if (sheet && sheet.total > 1){ c.hidden = false; c.textContent = `Foto ${sheet.total - sheet.queue.length} de ${sheet.total} · pon el código de esta foto`; }
     else c.hidden = true;
   }
+  function setMsg(t, info){ const m = $('#sheetMsg'); m.textContent = t || ''; m.className = 'warn' + (info ? ' info' : ''); }
   function setBlob(blob){
     if (sheet.previewUrl) URL.revokeObjectURL(sheet.previewUrl);
     sheet.blob = blob; sheet.previewUrl = blob ? URL.createObjectURL(blob) : null;
     drawShot(); drawCounter(); updateSave();
+  }
+  function updateSave(){
+    const code = norm($('#code').value);
+    $('#save').disabled = !code;
+    if (sheet && sheet.checkDup && code){
+      const d = sheet.checkDup(code);
+      setMsg(d || (sheet.previewUrl || sheet.photoUrl || sheet.noPhoto ? '' : 'La foto es opcional, pero recomendable.'), !d || sheet.dupIsInfo);
+    }
   }
   async function takeFiles(files){
     if (!files.length || !sheet) return;
@@ -285,75 +439,64 @@
     setBlob(blobs[0]);
     if (!$('#code').value) $('#code').focus();
   }
-  function drawShot(){
-    const url = sheet.previewUrl || sheet.photoUrl;
-    $('#shot').innerHTML = url
-      ? `<img src="${esc(url)}" alt="Foto">`
-      : `<span style="font-size:40px">📷</span><span>Hacer foto</span>`;
-  }
-  function setMsg(t, info){ const m = $('#sheetMsg'); m.textContent = t || ''; m.className = 'warn' + (info ? ' info' : ''); }
-  function updateSave(){
-    const code = norm($('#code').value);
-    $('#save').disabled = !code;
-    if (sheet && sheet.checkDup && code){
-      const d = sheet.checkDup(code);
-      setMsg(d ? d : (sheet.previewUrl || sheet.photoUrl ? '' : 'La foto es opcional, pero recomendable.'), !d);
+  // Si el código de pieza ya existe en otra máquina, se rellena la descripción
+  function suggestDesc(){
+    if (!sheet || !sheet.withDesc || $('#desc').value.trim()) return;
+    const code = norm($('#code').value); if (!code) return;
+    for (const m of machines) for (const c of m.components){
+      if (norm(c.code) === code && c.desc){ $('#desc').value = c.desc; setMsg('Descripción copiada de otra pieza con el mismo código.', true); return; }
     }
   }
-  $('#shot').addEventListener('click', () => cam.click());
-  $('#btnCam').addEventListener('click', () => cam.click());
-  $('#btnGal').addEventListener('click', () => gal.click());
+  $('#shot').addEventListener('click', async () => takeFiles(await pick(cam)));
+  $('#btnCam').addEventListener('click', async () => takeFiles(await pick(cam)));
+  $('#btnGal').addEventListener('click', async () => takeFiles(await pick(gal)));
   $('#code').addEventListener('input', updateSave);
-  $('#code').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('#save').disabled) $('#save').click(); });
+  $('#code').addEventListener('change', suggestDesc);
+  $('#code').addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (sheet && sheet.withDesc){ suggestDesc(); $('#desc').focus(); }
+    else if (!$('#save').disabled) $('#save').click();
+  });
+  $('#desc').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('#save').disabled) $('#save').click(); });
   $('#cancel').addEventListener('click', closeSheet);
-  for (const inp of [cam, gal]){
-    inp.addEventListener('change', () => { const files = Array.from(inp.files || []); inp.value = ''; takeFiles(files); });
-  }
   $('#save').addEventListener('click', async () => {
     if (!sheet) return;
     const code = norm($('#code').value);
+    const desc = $('#desc').value.trim();
     if (!code) return;
     const btn = $('#save'); btn.disabled = true; btn.textContent = 'Guardando…';
     try {
-      const photo = sheet.blob ? await storePhoto(sheet.blob) : undefined;
-      await sheet.onSave(code, photo);
+      const photo = sheet.blob ? await storePhoto(sheet.blob) : null;
+      await sheet.onSave(code, photo, desc);
       if (sheet && sheet.queue.length){
-        $('#code').value = '';
+        $('#code').value = ''; $('#desc').value = '';
         setBlob(sheet.queue.shift());
         setMsg('Guardado. Siguiente foto.', true);
         $('#code').focus();
       } else closeSheet();
     } catch(e){
-      const c = e && e.code;
-      setMsg(c === 'quota_or_state' || c === 'quota_exceeded' ? 'Almacenamiento lleno: borra elementos antiguos.'
-           : c === 'too_large' ? 'La foto es demasiado grande.'
-           : 'No se pudo guardar. Revisa la conexión y vuelve a intentarlo.');
-    } finally { btn.textContent = 'Guardar'; updateSave(); }
+      setMsg('No se pudo guardar. ¿Queda espacio en el móvil?');
+    } finally { btn.textContent = 'Guardar'; if (sheet) updateSave(); }
   });
-
-  // ---------- confirmación ----------
-  let confirmCb = null;
-  function ask(text, cb){ $('#confirmText').textContent = text; confirmCb = cb; $('#confirm').hidden = false; }
-  $('#confirmNo').addEventListener('click', () => { $('#confirm').hidden = true; confirmCb = null; });
-  $('#confirmYes').addEventListener('click', async () => { $('#confirm').hidden = true; const cb = confirmCb; confirmCb = null; if (cb){ try { await cb(); } catch(_){ toast('No se pudo eliminar.'); } } });
 
   // ---------- visor ----------
   function showPhoto(url){ if (!url) return; const lb = $('#lightbox'); lb.querySelector('img').src = url; lb.hidden = false; }
   $('#lightbox').addEventListener('click', () => $('#lightbox').hidden = true);
 
-  // ---------- acciones ----------
+  // ---------- máquinas y piezas ----------
+  const findMachineByCode = code => machines.find(x => norm(x.code) === norm(code)) || null;
   function dupMachine(code, exceptId){
     const m = machines.find(x => norm(x.code) === code && x.id !== exceptId);
     return m ? 'Ya existe una máquina con este código.' : '';
   }
-  function newMachine(){
+  function newMachine(prefill){
     openSheet({
-      title: 'Nueva máquina',
+      title: 'Nueva máquina', code: prefill || '',
       checkDup: c => dupMachine(c),
       onSave: async (code, photo) => {
-        const m = { id: newId(), code, photo: photo || null, createdAt: Date.now(), components: [] };
-        currentId = m.id;
+        const m = { id: newId(), code, photo, createdAt: Date.now(), components: [] };
         await persist(m);
+        go('machine', m.id);
       }
     });
   }
@@ -363,54 +506,243 @@
       checkDup: c => dupMachine(c, m.id),
       onSave: async (code, photo) => {
         const old = m.photo;
-        const upd = { ...m, code, photo: photo || m.photo, updatedAt: Date.now() };
-        await persist(upd);
+        await persist({ ...curM(), code, photo: photo || old });
         if (photo && old) dropPhoto(old);
       }
     });
   }
   function delMachine(m){
-    ask(`¿Eliminar la máquina ${m.code} y sus ${m.components.length} componentes?`, async () => {
-      currentId = null;
+    ask(`¿Eliminar la máquina ${m.code} y sus ${m.components.length} piezas?`, async () => {
       await removeMachineDoc(m.id);
-      dropPhoto(m.photo); m.components.forEach(c => dropPhoto(c.photo));
-      toast('Máquina eliminada');
+      dropPhoto(m.photo); m.components.forEach(c => c.photos.forEach(dropPhoto));
+      nav = { view: 'list' }; try { history.replaceState(nav, ''); } catch(_){}
+      render(); toast('Máquina eliminada');
     });
   }
   function dupComp(m, code, exceptId){
-    return m.components.some(c => norm(c.code) === code && c.id !== exceptId) ? 'Este componente ya está en esta máquina.' : '';
+    return m.components.some(c => norm(c.code) === code && c.id !== exceptId)
+      ? 'Ya hay una pieza con este código en esta máquina (si es otra igual, puedes guardarla igualmente).' : '';
   }
-  function newComponent(m){
+  function newComponent(m, blob){
     openSheet({
-      title: `Componente de ${m.code}`, multi: true,
-      checkDup: c => { const mm = current() || m; return dupComp(mm, c); },
-      onSave: async (code, photo) => {
-        const mm = current() || m;
-        const upd = { ...mm, components: [...mm.components, { id: newId(), code, photo: photo || null, createdAt: Date.now() }], updatedAt: Date.now() };
-        await persist(upd);
-        toast('Componente añadido');
+      title: `Pieza de ${m.code}`, multi: true, withDesc: true, blob, dupIsInfo: true,
+      checkDup: c => dupComp(curM() || m, c),
+      onSave: async (code, photo, desc) => {
+        const mm = curM() || m;
+        await persist({ ...mm, components: [...mm.components, { id: newId(), code, desc, photos: photo ? [photo] : [], createdAt: Date.now() }] });
+        toast('Pieza añadida');
       }
     });
   }
   function editComponent(m, comp){
     openSheet({
-      title: 'Editar componente', code: comp.code, photoUrl: photoSrc(comp.photo),
-      checkDup: c => dupComp(current() || m, c, comp.id),
-      onSave: async (code, photo) => {
-        const mm = current() || m;
-        const upd = { ...mm, updatedAt: Date.now(), components: mm.components.map(c => c.id === comp.id ? { ...c, code, photo: photo || c.photo } : c) };
-        await persist(upd);
-        if (photo && comp.photo) dropPhoto(comp.photo);
+      title: 'Editar pieza', code: comp.code, desc: comp.desc, withDesc: true, noPhoto: true, dupIsInfo: true,
+      checkDup: c => dupComp(curM() || m, c, comp.id),
+      onSave: async (code, _p, desc) => {
+        const mm = curM() || m;
+        await persist({ ...mm, components: mm.components.map(c => c.id === comp.id ? { ...c, code, desc } : c) });
       }
     });
   }
-  function delComponent(m, comp){
-    ask(`¿Eliminar el componente ${comp.code}?`, async () => {
-      const mm = current() || m;
-      await persist({ ...mm, updatedAt: Date.now(), components: mm.components.filter(c => c.id !== comp.id) });
-      dropPhoto(comp.photo);
+  async function addPhotosToComponent(compId, blobs){
+    const ids = [];
+    for (const b of blobs) ids.push(await storePhoto(b));
+    const mm = curM();
+    await persist({ ...mm, components: mm.components.map(c => c.id === compId ? { ...c, photos: [...c.photos, ...ids] } : c) });
+    return ids;
+  }
+  async function addPhotoFlow(comp){
+    const files = await choosePhotoSource('Añadir foto a la pieza');
+    const blobs = [];
+    for (const f of files){ try { blobs.push(await compress(f)); } catch(_){} }
+    if (!blobs.length){ toast('No se pudo leer la foto'); return; }
+    await addPhotosToComponent(comp.id, blobs);
+    toast(blobs.length > 1 ? `${blobs.length} fotos añadidas` : 'Foto añadida');
+  }
+  function delComponentPhoto(comp, pid){
+    ask('¿Eliminar esta foto?', async () => {
+      const mm = curM();
+      await persist({ ...mm, components: mm.components.map(c => c.id === comp.id ? { ...c, photos: c.photos.filter(p => p !== pid) } : c) });
+      dropPhoto(pid);
     });
   }
+  function delComponent(m, comp){
+    ask(`¿Eliminar la pieza ${comp.code}?`, async () => {
+      const mm = curM() || m;
+      await persist({ ...mm, components: mm.components.filter(c => c.id !== comp.id) });
+      comp.photos.forEach(dropPhoto);
+      goBack();
+    });
+  }
+
+  // ---------- reconocimiento de piezas ----------
+  let session = null, sessionLoading = null;
+  const embCache = {};
+  async function loadModel(){
+    if (session) return session;
+    if (!sessionLoading) sessionLoading = (async () => {
+      await loadScript(ORT_BASE + 'ort.wasm.min.js');
+      ort.env.wasm.numThreads = 1;
+      ort.env.wasm.wasmPaths = ORT_BASE;
+      session = await ort.InferenceSession.create(MODEL_URL, { executionProviders: ['wasm'] });
+      return session;
+    })().catch(e => { sessionLoading = null; throw e; });
+    return sessionLoading;
+  }
+  const MEAN = [0.485, 0.456, 0.406], STD = [0.229, 0.224, 0.225];
+  const cnv = document.createElement('canvas'); cnv.width = cnv.height = 224;
+  const cctx = cnv.getContext('2d', { willReadFrequently: true });
+  async function embedOne(src, sx, sy, sw, sh){
+    cctx.drawImage(src, sx, sy, sw, sh, 0, 0, 224, 224);
+    const d = cctx.getImageData(0, 0, 224, 224).data;
+    const N = 224 * 224, arr = new Float32Array(3 * N);
+    for (let i = 0; i < N; i++){
+      arr[i]       = (d[i*4]   / 255 - MEAN[0]) / STD[0];
+      arr[i + N]   = (d[i*4+1] / 255 - MEAN[1]) / STD[1];
+      arr[i + 2*N] = (d[i*4+2] / 255 - MEAN[2]) / STD[2];
+    }
+    const out = await session.run({ input: new ort.Tensor('float32', arr, [1, 3, 224, 224]) });
+    return out[session.outputNames[0]].data;
+  }
+  async function embedBlob(blob){
+    await loadModel();
+    const src = await toBitmap(blob);
+    const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight;
+    // dos vistas: la foto entera y el centro (80 %), promediadas
+    const a = await embedOne(src, 0, 0, w, h);
+    const b = await embedOne(src, w * 0.1, h * 0.1, w * 0.8, h * 0.8);
+    const v = new Float32Array(a.length); let n = 0;
+    for (let i = 0; i < v.length; i++){ v[i] = a[i] + b[i]; n += v[i] * v[i]; }
+    n = Math.sqrt(n) || 1; for (let i = 0; i < v.length; i++) v[i] /= n;
+    return v;
+  }
+  async function getEmb(pid){
+    if (embCache[pid]) return embCache[pid];
+    let v = null;
+    try { v = await idbGet('emb', pid); } catch(_){}
+    if (!v){
+      const blob = await idbGet('photos', pid); if (!blob) return null;
+      v = await embedBlob(blob);
+      try { await tx('emb', 'readwrite', s => s.put(v, pid)); } catch(_){}
+    }
+    return (embCache[pid] = v);
+  }
+  const dot = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; };
+
+  async function identifyFlow(m){
+    const withPhotos = m.components.filter(c => c.photos.length);
+    if (!withPhotos.length){ toast('Esta máquina aún no tiene piezas con foto'); return; }
+    const files = await choosePhotoSource('Identificar pieza');
+    let blob; try { blob = await compress(files[0]); } catch(_){ toast('No se pudo leer la foto'); return; }
+    const qUrl = URL.createObjectURL(blob);
+    const progress = t => choose('Identificando…', `<img class="qimg" src="${qUrl}" alt=""><p class="meta" style="text-align:center">${esc(t)}</p>`, []);
+    try {
+      progress(session ? 'Analizando…' : 'Cargando el reconocimiento (solo la primera vez, puede tardar)…');
+      await loadModel();
+      const q = await embedBlob(blob);
+      const total = withPhotos.reduce((s, c) => s + c.photos.length, 0); let done = 0;
+      const scored = [];
+      for (const c of withPhotos){
+        let best = -1, bestPid = c.photos[0];
+        for (const pid of c.photos){
+          if (!embCache[pid]) progress(`Analizando fotos de la máquina ${++done}/${total}…`); else done++;
+          const e = await getEmb(pid); if (!e) continue;
+          const s = dot(q, e); if (s > best){ best = s; bestPid = pid; }
+        }
+        scored.push({ c, s: best, pid: bestPid });
+      }
+      scored.sort((a, b) => b.s - a.s);
+      // agrupar piezas iguales (mismo código): se muestra la mejor de cada código
+      const seen = new Set(), top = [];
+      for (const x of scored){ const k = norm(x.c.code); if (!seen.has(k)){ seen.add(k); top.push(x); } if (top.length === 3) break; }
+      showResults(m, blob, qUrl, top);
+    } catch(e){
+      closeChoose();
+      toast('No se pudo cargar el reconocimiento. Necesita conexión la primera vez.', 4000);
+    }
+  }
+  function showResults(m, blob, qUrl, top){
+    const level = s => s >= 0.80 ? 'Muy parecida' : s >= 0.65 ? 'Parecida' : 'Poco parecida';
+    const body = `<img class="qimg" src="${qUrl}" alt="">
+      <p class="meta" style="margin:10px 0 0">Toca la pieza correcta:</p>
+      ${top.map((x, i) => `<button class="cand" data-i="${i}">
+        ${photoSrc(x.pid) ? `<img src="${esc(photoSrc(x.pid))}" alt="">` : '<div class="thumb">🔩</div>'}
+        <div style="flex:1;min-width:0"><b style="word-break:break-all">${esc(x.c.code)}</b>
+          <div class="sub">${esc(x.c.desc || '')}</div>
+          <div class="sub">${level(x.s)} · ${Math.round(Math.max(0, x.s) * 100)}%</div>
+          <div class="meter"><i style="width:${Math.round(Math.max(0, Math.min(1, (x.s - 0.3) / 0.7)) * 100)}%"></i></div>
+        </div></button>`).join('')}`;
+    choose('Resultado', body, [{ label: 'Ninguna: añadir como pieza nueva', fn: () => newComponent(m, blob) }]);
+    $('#chooseBody').querySelectorAll('.cand').forEach(b => b.addEventListener('click', () => {
+      const x = top[+b.dataset.i];
+      choose(`${x.c.code}`, `<p class="sub">${esc(x.c.desc || '')}</p><p>¿Guardar también esta foto en la pieza? Así la próxima vez la reconocerá mejor.</p>`, [
+        { label: 'Sí, guardar la foto y abrir', primary: true, fn: async () => { await addPhotosToComponent(x.c.id, [blob]); go('comp', m.id, x.c.id); } },
+        { label: 'No, solo abrir la pieza', fn: () => go('comp', m.id, x.c.id) },
+      ]);
+    }));
+  }
+
+  // ---------- escáner QR / código de barras ----------
+  let stream = null, scanTimer = null, detector = null, scanning = false;
+  async function openScanner(){
+    $('#scanner').hidden = false; $('#scanCode').value = '';
+    $('#scanMsg').textContent = 'Apunta al código QR o de barras de la máquina';
+    scanning = true;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    } catch(_){
+      $('#scanMsg').textContent = 'No se puede usar la cámara aquí. Permite el acceso a la cámara o escribe el código.';
+      return;
+    }
+    if (!scanning){ stopStream(); return; }
+    const v = $('#video'); v.srcObject = stream; try { await v.play(); } catch(_){}
+    detector = null;
+    try {
+      if ('BarcodeDetector' in window){
+        const f = await BarcodeDetector.getSupportedFormats();
+        if (f && f.length) detector = new BarcodeDetector({ formats: f });
+      }
+    } catch(_){ detector = null; }
+    if (!detector){ try { await loadScript(JSQR_URL); } catch(_){ $('#scanMsg').textContent = 'Sin conexión para el lector de QR. Escribe el código.'; return; } }
+    scanLoop();
+  }
+  const scanCanvas = document.createElement('canvas');
+  async function scanLoop(){
+    if (!scanning) return;
+    const v = $('#video');
+    let text = null;
+    try {
+      if (v.readyState >= 2){
+        if (detector){
+          const r = await detector.detect(v); if (r && r.length) text = r[0].rawValue;
+        } else if (window.jsQR){
+          const w = 480, h = Math.round(480 * v.videoHeight / v.videoWidth) || 360;
+          scanCanvas.width = w; scanCanvas.height = h;
+          const ctx = scanCanvas.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(v, 0, 0, w, h);
+          const r = jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'dontInvert' });
+          if (r && r.data) text = r.data;
+        }
+      }
+    } catch(_){}
+    if (text){ try { navigator.vibrate && navigator.vibrate(80); } catch(_){} closeScanner(); handleCode(text); return; }
+    scanTimer = setTimeout(scanLoop, 180);
+  }
+  function stopStream(){ if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; } }
+  function closeScanner(){ scanning = false; clearTimeout(scanTimer); stopStream(); $('#scanner').hidden = true; }
+  function handleCode(raw){
+    const code = norm(raw);
+    if (!code) return;
+    const m = findMachineByCode(code);
+    if (m){ go('machine', m.id); return; }
+    choose(`No existe la máquina ${code}`, '', [
+      ...(canWrite() ? [{ label: 'Crear máquina con este código', primary: true, fn: () => newMachine(code) }] : []),
+      { label: 'Escanear otra vez', fn: openScanner },
+    ]);
+  }
+  $('#scanClose').addEventListener('click', closeScanner);
+  $('#scanGo').addEventListener('click', () => { const c = $('#scanCode').value; if (norm(c)){ closeScanner(); handleCode(c); } });
+  $('#scanCode').addEventListener('keydown', e => { if (e.key === 'Enter') $('#scanGo').click(); });
 
   // ---------- exportar / importar ----------
   const csvCell = v => { const s = String(v ?? ''); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
@@ -426,26 +758,31 @@
     if (!window.JSZip){ toast('Sin conexión: no se puede preparar el ZIP ahora'); return; }
     toast('Preparando ZIP…');
     const zip = new JSZip();
-    const rows = [['maquina','componente','alta_maquina','alta_componente','foto_maquina','foto_componente']];
-    const data = { version: 1, exportado: new Date().toISOString(), machines: [] };
+    const rows = [['maquina','pieza','descripcion','n_fotos','alta_maquina','alta_pieza','foto_maquina','fotos_pieza']];
+    const data = { version: 2, exportado: new Date().toISOString(), machines: [] };
     const addPhoto = async (id, path) => { if (!id) return ''; const b = await idbGet('photos', id); if (!b) return ''; zip.file(path, b); return path; };
     for (const m of machines){
-      const mFoto = await addPhoto(m.photo, `fotos/${safeName(m.code)}/_maquina.jpg`);
+      const dir = `fotos/${safeName(m.code)}`;
+      const mFoto = await addPhoto(m.photo, `${dir}/_maquina.jpg`);
       const comps = [];
       for (let i = 0; i < m.components.length; i++){
-        const c = m.components[i];
-        const cFoto = await addPhoto(c.photo, `fotos/${safeName(m.code)}/${String(i+1).padStart(2,'0')}_${safeName(c.code)}.jpg`);
-        comps.push({ ...c, photoFile: cFoto });
-        rows.push([m.code, c.code, fmt(m.createdAt), fmt(c.createdAt), mFoto, cFoto]);
+        const c = m.components[i], files = [];
+        for (let j = 0; j < c.photos.length; j++){
+          const p = await addPhoto(c.photos[j], `${dir}/${String(i+1).padStart(2,'0')}_${safeName(c.code)}${c.photos.length > 1 ? '_' + (j+1) : ''}.jpg`);
+          if (p) files.push(p);
+        }
+        comps.push({ id: c.id, code: c.code, desc: c.desc, createdAt: c.createdAt, photoFiles: files });
+        rows.push([m.code, c.code, c.desc, files.length, fmt(m.createdAt), fmt(c.createdAt), mFoto, files.join(' | ')]);
       }
-      if (!m.components.length) rows.push([m.code, '', fmt(m.createdAt), '', mFoto, '']);
-      data.machines.push({ ...m, photoFile: mFoto, components: comps });
+      if (!m.components.length) rows.push([m.code, '', '', 0, fmt(m.createdAt), '', mFoto, '']);
+      data.machines.push({ id: m.id, code: m.code, createdAt: m.createdAt, updatedAt: m.updatedAt, photoFile: mFoto, components: comps });
     }
     zip.file('inventario.csv', '﻿' + rows.map(r => r.map(csvCell).join(';')).join('\r\n'));
     zip.file('datos.json', JSON.stringify(data, null, 1));
     const blob = await zip.generateAsync({ type: 'blob' });
     saveFile(blob, `inventario_${new Date().toISOString().slice(0,10)}.zip`);
     try { localStorage.setItem('lastExport', String(Date.now())); } catch(_){}
+    render();
   }
   async function importZip(file){
     if (!window.JSZip){ toast('Sin conexión: no se puede leer el ZIP ahora'); return; }
@@ -455,70 +792,98 @@
       if (!jf){ toast('Este ZIP no es una copia de esta app'); return; }
       const data = JSON.parse(await jf.async('string'));
       let added = 0, skipped = 0;
+      const load = async p => { const f = p && zip.file(p); return f ? await storePhoto(new Blob([await f.async('blob')], { type: 'image/jpeg' })) : null; };
       for (const m of (data.machines || [])){
         if (!m || !m.id || machines.some(x => x.id === m.id)){ skipped++; continue; }
-        const load = async p => { const f = p && zip.file(p); return f ? await storePhoto(new Blob([await f.async('blob')], { type: 'image/jpeg' })) : null; };
         const comps = [];
-        for (const c of (m.components || [])) comps.push({ id: c.id || newId(), code: c.code, createdAt: c.createdAt, photo: await load(c.photoFile) });
-        await persist({ id: m.id, code: m.code, createdAt: m.createdAt, updatedAt: m.updatedAt, photo: await load(m.photoFile), components: comps });
+        for (const c of (m.components || [])){
+          const files = c.photoFiles || (c.photoFile ? [c.photoFile] : []);
+          const photos = []; for (const f of files){ const id = await load(f); if (id) photos.push(id); }
+          comps.push({ id: c.id || newId(), code: c.code, desc: c.desc || '', createdAt: c.createdAt, photos });
+        }
+        await persist({ id: m.id, code: m.code, createdAt: m.createdAt, photo: await load(m.photoFile), components: comps });
         added++;
       }
       toast(`Importadas ${added} máquinas` + (skipped ? ` (${skipped} ya estaban)` : ''));
     } catch(_){ toast('No se pudo leer el ZIP'); }
   }
+  $('#imp').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) importZip(f); });
 
   // ---------- pantallas ----------
+  function setBar(b1, f1, b2, f2){
+    const bar = $('#bar');
+    bar.hidden = !b1;
+    $('#bar1').textContent = b1 || ''; $('#bar1').onclick = f1 || null;
+    $('#bar2').hidden = !b2; $('#bar2').textContent = b2 || ''; $('#bar2').onclick = f2 || null;
+  }
   function render(){
-    const m = current();
-    $('#back').hidden = !m;
-    $('#title').textContent = m ? m.code : 'Máquinas';
-    $('#exportBtn').hidden = !!m || !machines.length;
-    const fab = $('#fab');
-    fab.hidden = !canWrite();
-    fab.textContent = m ? '📷  Añadir componente' : '📷  Nueva máquina';
-    if (m) renderDetail(m); else renderList();
+    let m = curM(), c = curC();
+    if (nav.view === 'comp' && !c) nav = m ? { view: 'machine', m: m.id } : { view: 'list' };
+    if (nav.view === 'machine' && !m) nav = { view: 'list' };
+    m = curM(); c = curC();
+    const v = nav.view;
+    $('#back').hidden = v === 'list';
+    $('#title').textContent = v === 'machine' ? m.code : v === 'comp' ? c.code : v === 'labels' ? 'Etiquetas QR' : 'Máquinas';
+    $('#exportBtn').hidden = v !== 'list' || !machines.length;
+    $('#labelsBtn').hidden = v !== 'list' || !machines.length;
+    if (v !== 'list' && mode === 'local') banner('');
+    if (v === 'list'){
+      setBar(canWrite() ? '📷 Nueva máquina' : null, () => newMachine(), '⌖ Escanear', openScanner);
+      renderList(); backupBanner();
+    } else if (v === 'machine'){
+      setBar(canWrite() ? '📷 Añadir pieza' : null, () => newComponent(m), canWrite() ? '🔍 Identificar' : null, () => identifyFlow(m));
+      renderMachine(m);
+    } else if (v === 'comp'){
+      setBar(canWrite() ? '📷 Añadir foto' : null, () => addPhotoFlow(c));
+      renderComp(m, c);
+    } else if (v === 'labels'){
+      setBar('🖨️ Imprimir', () => { try { window.print(); } catch(_){ toast('Este navegador no deja imprimir'); } });
+      renderLabels();
+    }
   }
 
   function renderList(){
     const v = $('#view');
-    if (mode === 'loading' && !machines.length){ v.innerHTML = '<div class="empty">Cargando…</div>'; return; }
+    if (mode === 'loading'){ v.innerHTML = '<div class="empty">Cargando…</div>'; return; }
     v.innerHTML = `
-      <input id="q" class="search" type="search" placeholder="Buscar máquina o componente…" value="${esc(query)}" autocapitalize="characters">
+      <input id="q" class="search" type="search" placeholder="Buscar máquina o pieza…" value="${esc(query)}" autocapitalize="characters">
       <div id="list" class="list"></div>`;
     $('#q').addEventListener('input', e => { query = e.target.value; renderItems(); });
     renderItems();
   }
-  function renderItems(){
-    const q = norm(query);
-    const list = machines.filter(m => !q || norm(m.code).includes(q) || m.components.some(c => norm(c.code).includes(q)));
-    const el = $('#list'); if (!el) return;
-    if (!machines.length){
-      el.innerHTML = `<div class="empty">Aún no hay máquinas.<br>Pulsa <b>Nueva máquina</b> para hacer la primera foto.</div>` + footer();
-      return;
-    }
-    if (!list.length){ el.innerHTML = '<div class="empty">Sin resultados.</div>'; return; }
-    el.innerHTML = list.map(m => {
-      const hit = q && !norm(m.code).includes(q) ? m.components.find(c => norm(c.code).includes(q)) : null;
-      return `<button class="item" data-id="${esc(m.id)}">
-        ${m.photo ? `<img class="thumb" src="${esc(photoSrc(m.photo))}" alt="" loading="lazy">` : '<div class="thumb">⚙️</div>'}
-        <div style="min-width:0">
-          <div class="code">${esc(m.code)}</div>
-          <div class="sub">${m.components.length} componente${m.components.length === 1 ? '' : 's'} · ${esc(fmt(m.createdAt))}</div>
-          ${hit ? `<div class="sub">Contiene: <b>${esc(hit.code)}</b></div>` : ''}
-        </div></button>`;
-    }).join('') + `<div class="foot meta">${machines.length} máquina${machines.length === 1 ? '' : 's'}</div>` + footer();
-    bindImport();
-    el.querySelectorAll('.item').forEach(b => b.addEventListener('click', () => { currentId = b.dataset.id; window.scrollTo(0,0); render(); }));
-  }
-
   function footer(){
-    let last = 0; try { last = +localStorage.getItem('lastExport') || 0; } catch(_){}
+    const le = lastExport();
     return `<div class="foot meta" style="margin-top:28px">
       Los datos se guardan solo en este móvil.<br>
-      ${machines.length ? (last ? 'Última copia: ' + esc(fmt(last)) : '<b>Aún no has hecho ninguna copia.</b>') + ' Usa <b>Exportar</b> de vez en cuando.<br>' : ''}
+      ${machines.length ? (le ? 'Última copia: ' + esc(fmt(le)) : '<b>Aún no has hecho ninguna copia.</b>') + '<br>' : ''}
       <button class="ghost" id="importBtn" style="margin-top:6px">Importar copia (.zip)</button></div>`;
   }
-  function renderDetail(m){
+  function renderItems(){
+    const q = norm(query);
+    const el = $('#list'); if (!el) return;
+    const matchC = c => norm(c.code).includes(q) || norm(c.desc).includes(q);
+    const list = machines.filter(m => !q || norm(m.code).includes(q) || m.components.some(matchC));
+    if (!machines.length){
+      el.innerHTML = `<div class="empty">Aún no hay máquinas.<br>Pulsa <b>Nueva máquina</b> para hacer la primera foto.</div>` + footer();
+    } else if (!list.length){
+      el.innerHTML = '<div class="empty">Sin resultados.</div>' + footer();
+    } else {
+      el.innerHTML = list.map(m => {
+        const hit = q && !norm(m.code).includes(q) ? m.components.find(matchC) : null;
+        return `<button class="item" data-id="${esc(m.id)}">
+          ${m.photo ? `<img class="thumb" src="${esc(photoSrc(m.photo))}" alt="" loading="lazy">` : '<div class="thumb">⚙️</div>'}
+          <div style="min-width:0">
+            <div class="code">${esc(m.code)}</div>
+            <div class="sub">${m.components.length} pieza${m.components.length === 1 ? '' : 's'} · ${esc(fmt(m.createdAt))}</div>
+            ${hit ? `<div class="sub">Contiene: <b>${esc(hit.code)}</b> ${esc(hit.desc || '')}</div>` : ''}
+          </div></button>`;
+      }).join('') + `<div class="foot meta">${machines.length} máquina${machines.length === 1 ? '' : 's'}</div>` + footer();
+    }
+    const ib = $('#importBtn'); if (ib) ib.onclick = () => $('#imp').click();
+    el.querySelectorAll('.item').forEach(b => b.addEventListener('click', () => go('machine', b.dataset.id)));
+  }
+
+  function renderMachine(m){
     const v = $('#view');
     const src = photoSrc(m.photo);
     v.innerHTML = `
@@ -527,36 +892,61 @@
       <div class="meta">Alta: ${esc(fmt(m.createdAt))}</div>
       ${canWrite() ? `<div class="actions">
         <button id="editM" class="btn">Editar</button>
+        <button id="qrM" class="btn">Etiqueta QR</button>
         <button id="delM" class="btn danger">Eliminar</button>
       </div>` : ''}
-      <h3>Componentes (${m.components.length})</h3>
+      <h3>Piezas (${m.components.length})</h3>
       ${m.components.length ? `<div class="grid">${m.components.map(c => `
-        <div class="comp" data-id="${esc(c.id)}">
-          ${c.photo ? `<img class="img" src="${esc(photoSrc(c.photo))}" alt="" loading="lazy" data-act="view">` : '<div class="img">🔩</div>'}
-          <div class="c"><span>${esc(c.code)}</span>
-            ${canWrite() ? `<span><button data-act="edit">Editar</button><button data-act="del" style="color:var(--danger)">✕</button></span>` : ''}
-          </div>
-        </div>`).join('')}</div>`
-        : `<div class="empty">Sin componentes.<br>Pulsa <b>Añadir componente</b> para fotografiar el primero.</div>`}`;
+        <button class="comp" data-id="${esc(c.id)}">
+          ${firstPhoto(c) ? `<img class="img" src="${esc(photoSrc(firstPhoto(c)))}" alt="" loading="lazy">` : '<div class="img">🔩</div>'}
+          ${c.photos.length > 1 ? `<span class="badge">${c.photos.length} fotos</span>` : ''}
+          <div class="c"><b>${esc(c.code)}</b><span>${esc(c.desc || ' ')}</span></div>
+        </button>`).join('')}</div>`
+        : `<div class="empty">Sin piezas.<br>Pulsa <b>Añadir pieza</b> para fotografiar la primera.</div>`}`;
     const hero = $('#hero'); if (hero) hero.addEventListener('click', () => showPhoto(src));
     const em = $('#editM'); if (em) em.addEventListener('click', () => editMachine(m));
     const dm = $('#delM'); if (dm) dm.addEventListener('click', () => delMachine(m));
-    v.querySelectorAll('.comp').forEach(card => {
-      const comp = m.components.find(c => c.id === card.dataset.id);
-      card.addEventListener('click', e => {
-        const act = e.target.dataset && e.target.dataset.act;
-        if (act === 'view') showPhoto(photoSrc(comp.photo));
-        if (act === 'edit') editComponent(m, comp);
-        if (act === 'del') delComponent(m, comp);
-      });
-    });
+    const qm = $('#qrM'); if (qm) qm.addEventListener('click', () => go('labels', m.id));
+    v.querySelectorAll('.comp').forEach(b => b.addEventListener('click', () => go('comp', m.id, b.dataset.id)));
   }
 
-  function bindImport(){ const b = $('#importBtn'); if (b) b.onclick = () => $('#imp').click(); }
-  $('#imp').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) importZip(f); });
-  $('#back').addEventListener('click', () => { currentId = null; render(); });
+  function renderComp(m, c){
+    const v = $('#view');
+    v.innerHTML = `
+      <div class="meta">Máquina ${esc(m.code)}</div>
+      <div class="mcode">${esc(c.code)}</div>
+      ${c.desc ? `<div class="desc">${esc(c.desc)}</div>` : ''}
+      <div class="meta">Alta: ${esc(fmt(c.createdAt))}</div>
+      ${canWrite() ? `<div class="actions">
+        <button id="editC" class="btn">Editar código / descripción</button>
+        <button id="delC" class="btn danger">Eliminar pieza</button>
+      </div>` : ''}
+      <h3>Fotos (${c.photos.length})</h3>
+      ${c.photos.length ? `<div class="photos">${c.photos.map(p => `
+        <div class="ph"><img src="${esc(photoSrc(p))}" alt="" data-p="${esc(p)}">
+        ${canWrite() ? `<button data-del="${esc(p)}" aria-label="Eliminar foto">✕</button>` : ''}</div>`).join('')}</div>` : '<div class="empty">Sin fotos.</div>'}
+      <p class="meta" style="margin-top:14px">Consejo: 2 o 3 fotos desde ángulos distintos ayudan a que <b>Identificar</b> la reconozca mejor.</p>`;
+    const ec = $('#editC'); if (ec) ec.addEventListener('click', () => editComponent(m, c));
+    const dc = $('#delC'); if (dc) dc.addEventListener('click', () => delComponent(m, c));
+    v.querySelectorAll('.ph img').forEach(i => i.addEventListener('click', () => showPhoto(i.src)));
+    v.querySelectorAll('.ph button').forEach(b => b.addEventListener('click', () => delComponentPhoto(c, b.dataset.del)));
+  }
+
+  async function renderLabels(){
+    const v = $('#view');
+    const list = nav.m ? machines.filter(m => m.id === nav.m) : machines;
+    v.innerHTML = `<p class="meta noprint">Imprime en papel adhesivo y recorta. El QR contiene solo el código de la máquina.</p><div id="labels" class="labels"><div class="empty">Generando…</div></div>`;
+    try { await loadScript(QRGEN_URL); } catch(_){ $('#labels').innerHTML = '<div class="empty">Sin conexión: no se pueden generar los QR ahora.</div>'; return; }
+    if (nav.view !== 'labels') return;
+    $('#labels').innerHTML = list.map(m => {
+      const qr = qrcode(0, 'M'); qr.addData(m.code); qr.make();
+      return `<div class="label">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}<b>${esc(m.code)}</b></div>`;
+    }).join('');
+  }
+
+  $('#back').addEventListener('click', goBack);
   $('#exportBtn').addEventListener('click', exportAll);
-  $('#fab').addEventListener('click', () => { const m = current(); if (m) newComponent(m); else newMachine(); });
+  $('#labelsBtn').addEventListener('click', () => go('labels'));
 
   init();
 })();
